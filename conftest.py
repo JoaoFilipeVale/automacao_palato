@@ -1,11 +1,12 @@
-# I import PyTest. I need this so that
-# PyTest recognizes my special functions,
-# like "pytest_addoption" and '@pytest.fixture'.
+# I import 'os' (Operating System) so I can read
+# "Environment Variables" and detect if I'm on GitHub.
+import os
+
+# I import PyTest for my "hook" and "fixture" functions.
 import pytest
 
 # I import the Selenium tools (webdriver, Service)
-# and the manager (ChromeDriverManager) here,
-# because my 'driver' fixture (which opens the browser) will use this.
+# and the manager (ChromeDriverManager) here.
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
@@ -16,7 +17,6 @@ from selenium.webdriver.chrome.options import Options
 
 
 # --- Add my '--env' option to PyTest ---
-
 # (This part stays exactly the same)
 def pytest_addoption(parser):
     """This function will register my custom '--env' option in PyTest"""
@@ -29,7 +29,6 @@ def pytest_addoption(parser):
 
 
 # --- Create my "base_url" fixture ---
-
 # (This part also stays exactly the same)
 @pytest.fixture
 def base_url(request: pytest.FixtureRequest):
@@ -52,30 +51,39 @@ def base_url(request: pytest.FixtureRequest):
     return urls[env]
 
 
-# --- MY "driver" FIXTURE ---
-
+# ---  MY "driver" FIXTURE ---
 @pytest.fixture
 def driver():
     """This fixture will open and close the browser for my tests"""
 
     # 1. I'll configure the OPTIONS for Chrome first.
+    # These options are needed for BOTH my PC and GitHub.
     options = Options()
-    options.add_argument("--headless")          # <-- This is the magic line that runs Chrome without a window.
-    options.add_argument("--no-sandbox")        # <-- This is required to run as "root" in the Linux container.
-    options.add_argument("--disable-dev-shm-usage") # <-- This avoids memory issues in the VM.
+    options.add_argument("--headless")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
     
-    # 2. I'll configure ChromeDriver automatically.
-    s = Service(ChromeDriverManager().install())
+    # 2.  --- THIS IS THE "SMART" CHECK ---
+    # I'll check if I'm running inside a GitHub Action (CI = Continuous Integration)
+    # The 'os.getenv("CI")' will return "true" if I'm on GitHub,
+    # and "None" if I'm on my local PC.
+    if os.getenv("CI") == "true":
+        # If I'm on GitHub:
+        # The 'setup-chrome' action in my main.yml already installed
+        # the correct chromedriver. I'll just pass the options.
+        driver = webdriver.Chrome(options=options)
+    else:
+        # If I'm on my LOCAL PC:
+        # I need the full 'Service' and 'WebDriverManager'
+        # to download the driver for me.
+        s = Service(ChromeDriverManager().install())
+        driver = webdriver.Chrome(service=s, options=options)
 
-    # 3. Now, I'll start the Chrome browser,
-    # PASSING MY NEW 'options' to it.
-    driver = webdriver.Chrome(service=s, options=options)
-
-    # 4. I'll add an implicit wait.
+    # 3. I'll add an implicit wait.
     driver.implicitly_wait(5)
 
-    # 5. I "hand over" the 'driver' to the test.
+    # 4. I "hand over" the 'driver' to the test.
     yield driver
 
-    # 6. After the test, I close the browser.
+    # 5. After the test, I close the browser.
     driver.quit()
