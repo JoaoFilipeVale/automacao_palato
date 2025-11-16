@@ -1,0 +1,22 @@
+# --- Ambientes Virtuais do Python ---
+# Eu nunca quero enviar a minha "bolha" de bibliotecas (venv).
+# Qualquer pessoa que clone o meu projeto deve criar a sua própria venv
+# e instalar as bibliotecas a partir do 'requirements.txt'.
+venv/
+.venv/
+
+# --- Cache e Metadados do Python ---
+# Ficheiros temporários que o Python cria.
+__pycache__/
+*.pyc
+.pytest_cache
+
+# --- Cache e Definições do VS Code ---
+# Definições locais do meu editor.
+.vscode/
+
+# --- Ficheiros de Sistema Operacional ---
+# Lixo do Windows
+Thumbs.db
+# Lixo do Mac
+.DS_Store
