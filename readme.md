@@ -1,49 +1,49 @@
-# Framework de Automação de Testes (Palato Digital)
+# Test Automation Framework (Palato Digital)
 
-Este repositório contém o *framework* de automação de testes de QA para o website **Palato Digital**.
+This repository contains the QA test automation framework for the **[Palato Digital](https://palatodigital.com)** website.
 
-O objetivo principal deste projeto é criar um conjunto de testes de regressão (UI) para validar a funcionalidade principal do site (como o formulário de contacto) após atualizações, garantindo que novas versões de *plugins* ou temas não "partem" o site em produção.
-
----
-
-## Stack de Tecnologias (O que este projeto usa)
-
-- **Linguagem:** Python 3.12+
-- **Framework de Testes:** PyTest (para gestão, execução, *fixtures* e *asserts*)
-- **Automação de Browser:** Selenium WebDriver
-- **Gestão de Drivers:** `webdriver-manager` (para gerir o `chromedriver` automaticamente)
+The main goal of this project is to create a UI regression test suite that validates the website’s core functionality (such as the contact form) after updates, ensuring that new plugin or theme versions do not break the production site.
 
 ---
 
-## 1. Preparação do Ambiente
+## Technology Stack (What this project uses)
 
-Antes de correr os testes pela primeira vez, precisas de preparar o teu ambiente local.
+- **Language:** Python 3.12+
+- **Test Framework:** PyTest (for test management, execution, fixtures, and assertions)
+- **Browser Automation:** Selenium WebDriver
+- **Driver Management:** `webdriver-manager` (to automatically manage the ChromeDriver)
 
-### 1.1. Criar e Ativar o Ambiente Virtual
+---
 
-É uma boa prática isolar as dependências do projeto.
+## 1. Environment Setup
+
+Before running the tests for the first time, you need to prepare your local environment.
+
+### 1.1. Create and Activate the Virtual Environment
+
+It's a good practice to isolate project dependencies.
 
 ```bash
-# 1. Cria o ambiente virtual (venv)
+# 1. Create the virtual environment (venv)
 python -m venv venv
 
-# 2. Ativa o ambiente:
+# 2. Activate the environment:
 # Windows (PowerShell):
-.env\Scripts\Activate.ps1
+venv\Scripts\Activate.ps1
 
-# Mac/Linux (Bash/Zsh):
+# macOS/Linux (Bash/Zsh):
 source venv/bin/activate
 ```
 
-### 1.2. Criar o requirements.txt (Apenas uma vez)
+### 1.2. Generate requirements.txt (Only once)
 
-Para sabermos quais são as dependências do projeto, vamos "congelá-las" num ficheiro.
+To register the project dependencies, freeze them into a file.
 
 ```bash
 pip freeze > requirements.txt
 ```
 
-### 1.3. Instalar as Dependências
+### 1.3. Install Dependencies
 
 ```bash
 pip install -r requirements.txt
@@ -51,25 +51,25 @@ pip install -r requirements.txt
 
 ---
 
-## 2. Executar os Testes
+## 2. Running the Tests
 
-A framework permite correr testes em diferentes ambientes usando `--env`.
+The framework supports running tests against different environments by using the `--env` flag.
 
-### 2.1. Correr todos os testes
+### 2.1. Run all tests
 
-Staging (default):
+Staging environment (default):
 
 ```bash
 pytest
 ```
 
-Produção:
+Production:
 
 ```bash
 pytest --env=prod
 ```
 
-### 2.2. Correr um ficheiro de teste específico
+### 2.2. Run a specific test file
 
 ```bash
 pytest tests/test_contact_form.py --env=stag
@@ -78,19 +78,19 @@ pytest tests/test_homepage_title.py --env=prod
 
 ---
 
-## 3. Estrutura do Projeto
+## 3. Project Structure
 
 ```
 automacao_palato/
 |
-├── .venv/                  
+├── .venv/
 |
-├── tests/                  
-|   ├── __init__.py         
+├── tests/
+|   ├── __init__.py
 |   ├── test_homepage_title.py
 |   └── test_contact_form.py
 |
-├── conftest.py             
+├── conftest.py
 |
-└── requirements.txt        
+└── requirements.txt
 ```

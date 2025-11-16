@@ -1,22 +1,22 @@
-# --- Ambientes Virtuais do Python ---
-# Eu nunca quero enviar a minha "bolha" de bibliotecas (venv).
-# Qualquer pessoa que clone o meu projeto deve criar a sua própria venv
-# e instalar as bibliotecas a partir do 'requirements.txt'.
+# --- Python Virtual Environments ---
+# I never want to send my library "bubble" (venv).
+# Anyone who clones my project should create their own venv
+# and install the libraries from 'requirements.txt'.
 venv/
 .venv/
 
-# --- Cache e Metadados do Python ---
-# Ficheiros temporários que o Python cria.
+# --- Python Cache and Metadata ---
+# Temporary files that Python creates.
 __pycache__/
 *.pyc
 .pytest_cache
 
-# --- Cache e Definições do VS Code ---
-# Definições locais do meu editor.
+# --- VS Code Cache and Settings ---
+# My local editor settings.
 .vscode/
 
-# --- Ficheiros de Sistema Operacional ---
-# Lixo do Windows
+# --- Operating System Files ---
+# Windows trash
 Thumbs.db
-# Lixo do Mac
+# Mac trash
 .DS_Store

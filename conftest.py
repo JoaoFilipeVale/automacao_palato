@@ -1,106 +1,105 @@
-# Importo o PyTest. Eu preciso disto para
-# que o PyTest reconheça as minhas funções especiais,
-# como "pytest_addoption" e o '@pytest.fixture'.
+# I import PyTest. I need this so that
+# PyTest recognizes my special functions,
+# like "pytest_addoption" and '@pytest.fixture'.
 import pytest
 
-# Importar as ferramentas do Selenium (webdriver, Service)
-# e o gestor (ChromeDriverManager) aqui,
-# porque a minha fixture 'driver' (que abre o browser) vai usar isto
+# I import the Selenium tools (webdriver, Service)
+# and the manager (ChromeDriverManager) here,
+# because my 'driver' fixture (which opens the browser) will use this.
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 
 
-# --- Adicionar a minha opção '--env' ao PyTest ---
+# --- Add my '--env' option to PyTest ---
 
-# Esta é uma função "hook" do PyTest. O PyTest vai
-# procurá-la e executá-la automaticamente quando eu arrancar os testes.
-# O "parser" é o objeto que me vai permitir "adicionar novas opções"
-# à minha linha de comandos.
+# This is a special PyTest "hook" function. PyTest will
+# find it and run it automatically when I start the tests.
+# The "parser" is the object that will allow me to "add new options"
+# to my command line.
 def pytest_addoption(parser):
-    """Esta função vai registar a minha opção '--env' personalizada no PyTest"""
+    """This function will register my custom '--env' option in PyTest"""
 
-    # Aqui vou adicionar a minha própria flag da linha de comandos.
+    # Here I'll add my own command-line flag.
     parser.addoption(
-        # O nome da minha flag (exemplo --env=prod)
+        # The name of my flag (example: --env=prod)
         "--env",
 
-        # A ação: "store" significa "guarda o valor que vem a seguir"
-        # (exemplo --env="prod" -> eu quero que ele armazene "prod").
+        # The action: "store" means "save the value that comes next"
+        # (example: --env="prod" -> I want it to store "prod").
         action="store",
 
-        # O valor padrão: Se eu correr só "pytest" sem
-        # a flag '--env', quero que o valor "stag" seja usado por defeito.
+        # The default value: If I just run "pytest" without
+        # the '--env' flag, I want the value "stag" to be used by default.
         default="stag",
 
-        # Mensagem de ajuda que vai aparecer se eu correr "pytest --help"
-        help="O ambiente que os meus testes devem correr (exemplo 'stag' ou 'prod')"
+        # The help message that will appear if I run "pytest --help"
+        help="The environment my tests should run against (example: 'stag' or 'prod')"
     )
 
 
-# --- Criar a minha fixture "base_url" ---
+# --- Create my "base_url" fixture ---
 
-# O "@pytest.fixture" é um "decorador". Vou usá-lo para transformar
-# esta função num "assistente" que pode "fornecer" o URL
-# a qualquer teste que o peça.
+# The "@pytest.fixture" is a "decorator". I'll use it to turn
+# this function into a "helper" that can "provide" the URL
+# to any test that asks for it.
 @pytest.fixture
 def base_url(request: pytest.FixtureRequest):
-    """Esta fixture vai ler a minha opção '--env' do terminal e devolver o URL correto"""
+    """This fixture will read my '--env' option from the terminal and return the correct URL"""
 
-    # "request" é um argumento especial do PyTest
-    # vai dar-me acesso ao "contexto" do teste, incluindo as
-    # opções da linha de comandos que eu acabei de definir.
+    # "request" is a special PyTest argument
+    # It will give me access to the "context" of the test, including the
+    # command-line options that I just defined.
     
-    # 1. Vou ler o valor que eu passei (exemplo "stag" ou "prod")
+    # 1. I'll read the value I passed (example: "stag" or "prod")
     env = request.config.getoption("--env")
 
-    # 2. Vou definir os meus URLs num dicionário (é mais limpo)
+    # 2. I'll define my URLs in a dictionary (it's cleaner)
     urls = {
-        "stag": "https://stag.palatodigital.com", # URL Desenvolvimento
-        "prod": "https://palatodigital.com" # URL Produção
+        "stag": "https://stag.palatodigital.com", # Development URL
+        "prod": "https://palatodigital.com" # Production URL
     }
 
-    # 3. Tratamento de Erro:
-    # Vou verificar se o "env" que eu escrevi existe nos meus URLs.
-    # Isto é importante para falhar "rapidamente" se eu me enganar
-    # (exemplo --env=producao)
+    # 3. Error Handling:
+    # I'll check if the 'env' I typed exists in my URLs.
+    # This is important to "fail fast" if I make a mistake
+    # (example: --env=production)
     if env not in urls:
-        raise pytest.UsageError(f"Ambiente '{env}' desconhecido. Válidos: {list(urls.keys())}")
+        raise pytest.UsageError(f"Environment '{env}' unknown. Valid: {list(urls.keys())}")
     
-    # 4. Devolver o URL correcto.
-    # Qualquer teste que eu escrever que peça "base_url" como argumento
-    # (exemplo def test_foo(base_url): ...)
-    # vai receber o URL que esta linha retornar.
+    # 4. Return the correct URL.
+    # Any test I write that asks for 'base_url' as an argument
+    # (example: def test_foo(base_url): ...)
+    # will receive the URL that this line returns.
     return urls[env]
 
 
+# --- Create my "driver" fixture ---
 
-# --- Criar a minha fixture "driver" ---
-
-# O '@pytest.fixture' transforma esta função num "assistente" global para todos os testes.
+# The '@pytest.fixture' turns this function into a global "helper" for all tests.
 @pytest.fixture
 def driver():
-    """Esta fixture vai abrir e fechar o browser para os meus testes"""
+    """This fixture will open and close the browser for my tests"""
 
-    # 1. Configuro o ChromeDriver automaticamente.
-    # Vou usar o ChromeDriverManager().install() para ele descarregar
-    # o driver correto para a minha versão do Chrome.
+    # 1. I'll configure ChromeDriver automatically.
+    # I'll use ChromeDriverManager().install() so it downloads
+    # the correct driver for my version of Chrome.
     s = Service(ChromeDriverManager().install())
 
-    # 2. Agora, vou iniciar o browser Chrome,
-    # dizendo-lhe para usar o "Service" que acabei de configurar.
+    # 2. Now, I'll start the Chrome browser,
+    # telling it to use the "Service" I just configured.
     driver = webdriver.Chrome(service=s)
 
-    # 3. O meu site (Wordpress) pode demorar a carregar elementos.
-    # Para tornar os meus testes mais estáveis, vou adicionar uma
-    # espera implícita de 5 segundos.
+    # 3. My site (Wordpress) can be slow to load elements.
+    # To make my tests more stable, I'll add an
+    # implicit wait of 5 seconds.
     driver.implicitly_wait(5)
 
-    # 4. Esta é a parte central da fixture: o 'yield'.
-    # Eu "entrego" o "driver" (o browser) ao teste que o pediu.
+    # 4. This is the central part of the fixture: the 'yield'.
+    # I "hand over" the 'driver' (the browser) to the test that asked for it.
     yield driver
 
-    # 5. Depois que o teste acabar, eu volto aqui.
-    # Esta parte do código vai fechar o browser,
-    # garantindo que não fiquem janelas abertas depois dos testes.
+    # 5. After the test finishes, I'll return here.
+    # This part of the code will close the browser,
+    # ensuring no windows are left open after the tests.
     driver.quit()
