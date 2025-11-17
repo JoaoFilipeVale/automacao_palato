@@ -59,17 +59,26 @@ def test_contact_form(driver, base_url):
     # I set up an "Explicit Wait" of 10 seconds.
     wait = WebDriverWait(driver, 10)
 
-    # I tell the "wait" to wait until the element
-    # with the class "wpcf7-response-output" (the CF7 response box)
-    # is VISIBLE.
-    # (I corrected the 'sucess_message_element' typo to 'success_message_element')
-    success_message_element = wait.until(
-        EC.visibility_of_element_located((By.CLASS_NAME, "wpcf7-response-output"))
+    # I'll define the text I'm waiting for
+    # (It doesn't need to be the full sentence, just a unique part!)
+    expected_error = "Ocorreu um erro ao tentar enviar a sua mensagem. Por favor, tente novamente mais tarde." 
+
+    # I tell the 'wait' to wait UP TO 10 seconds
+    # for the text "Ocorreu um erro" to be present
+    # INSIDE the element with the class 'wpcf7-response-output'.
+    wait.until(
+        EC.text_to_be_present_in_element(
+            (By.CLASS_NAME, "wpcf7-response-output"), # 1. Where (The locator)
+            expected_error                            # 2. What (The text)
+        )
     )
 
-    # Finally, I check if the expected text
-    # is inside that element.
-    # (This is my test for the reCAPTCHA block)
-    # (I corrected the 'except_message' typo to 'expected_message')
-    expected_message = "Ocorreu um erro ao tentar enviar a sua mensagem."
-    assert expected_message in success_message_element.text
+    # 5. The Final Assert
+    # If the 'wait.until' passed, it means the text appeared!
+    # The test is 99% won. We can now do a final 'assert'
+    # just to confirm the full text is there.
+    final_text = driver.find_element(By.CLASS_NAME, "wpcf7-response-output").text
+    full_expected_message = "Ocorreu um erro ao tentar enviar a sua mensagem. Por favor, tente novamente mais tarde."
+
+    # I "assert" that the complete error message is in the final text.
+    assert full_expected_message in final_text

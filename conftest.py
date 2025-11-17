@@ -56,30 +56,33 @@ def base_url(request: pytest.FixtureRequest):
 def driver():
     """This fixture will open and close the browser for my tests"""
 
-    # 1. I'll configure the OPTIONS for Chrome first.
-    # These options are needed for BOTH my PC and GitHub.
-    options = Options()
-    options.add_argument("--headless")
-    options.add_argument("--no-sandbox")
-    options.add_argument("--disable-dev-shm-usage")
-    
-    # 2.  --- THIS IS THE "SMART" CHECK ---
-    # I'll check if I'm running inside a GitHub Action (CI = Continuous Integration)
-    # The 'os.getenv("CI")' will return "true" if I'm on GitHub,
-    # and "None" if I'm on my local PC.
+    # 1. --- THIS IS THE "SMART" CHECK ---
+    # I'll check if I'm running inside a GitHub Action (CI)
     if os.getenv("CI") == "true":
-        # If I'm on GitHub:
-        # The 'setup-chrome' action in my main.yml already installed
-        # the correct chromedriver. I'll just pass the options.
+        
+        # --- RUNNING ON GITHUB (CI) ---
+        # I MUST use headless options.
+        options = Options()
+        options.add_argument("--headless")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
+        
+        # The 'setup-chrome' action in main.yml installed the driver for me,
+        # so I just pass the options.
         driver = webdriver.Chrome(options=options)
+        
     else:
-        # If I'm on my LOCAL PC:
-        # I need the full 'Service' and 'WebDriverManager'
-        # to download the driver for me.
+        
+        # --- RUNNING ON MY LOCAL PC ---
+        # I DON'T want headless, because I want to see the browser.
+        
+        # 1. I'll just configure the WebDriverManager to download the driver.
         s = Service(ChromeDriverManager().install())
-        driver = webdriver.Chrome(service=s, options=options)
+        
+        # 2. I'll start the browser normally (WITHOUT headless options).
+        driver = webdriver.Chrome(service=s)
 
-    # 3. I'll add an implicit wait.
+    # 3. I'll add an implicit wait (this applies to both environments).
     driver.implicitly_wait(5)
 
     # 4. I "hand over" the 'driver' to the test.
