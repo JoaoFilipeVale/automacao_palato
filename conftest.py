@@ -1,25 +1,21 @@
-# I import 'os' (Operating System) so I can read
-# "Environment Variables" and detect if I'm on GitHub.
-import os
-
-# I import PyTest for my "hook" and "fixture" functions.
+# I import PyTest because it's my main testing framework and manages fixtures.
 import pytest
 
-# I import the Selenium tools (webdriver, Service)
-# and the manager (ChromeDriverManager) here.
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
+# I import 'os' to access environment variables (like "CI") and make environment decisions.
+import os
 
-# I need to import 'Options' to tell Chrome
-# HOW it should run (e.g., "headless").
-from selenium.webdriver.chrome.options import Options
+# I import 'Path' to create and manage file paths (e.g., to robustly create the screenshots folder).
+from pathlib import Path  
+
+# I import Playwright's 'expect'. This is what allows me to make verifications (asserts) and wait for elements (which makes tests stable).
+from playwright.sync_api import expect
 
 
-# --- Add my '--env' option to PyTest ---
-# (This part stays exactly the same)
+# --- 1. My Custom PyTest Option ---
 def pytest_addoption(parser):
     """This function will register my custom '--env' option in PyTest"""
+    
+    # I use this to add my own flag to the command line.
     parser.addoption(
         "--env",
         action="store",
@@ -28,65 +24,58 @@ def pytest_addoption(parser):
     )
 
 
-# --- Create my "base_url" fixture ---
-# (This part also stays exactly the same)
-@pytest.fixture
-def base_url(request: pytest.FixtureRequest):
+# --- 2. My Base URL Fixture ---
+@pytest.fixture(scope="session")
+def base_url(request):
     """This fixture will read my '--env' option from the terminal and return the correct URL"""
     
-    # 1. I'll read the value I passed
+    # I read the environment value the user passed (e.g., "stag")
     env = request.config.getoption("--env")
-
-    # 2. I'll define my URLs
-    urls = {
-        "stag": "https://stag.palatodigital.com", # <-- Development URL
-        "prod": "https://palatodigital.com" # <-- Production URL
-    }
-
-    # 3. Error Handling
-    if env not in urls:
-        raise pytest.UsageError(f"Environment '{env}' unknown. Valid: {list(urls.keys())}")
     
-    # 4. Return the correct URL
+    # I define my URLs in a dictionary
+    urls = {
+        "stag": "https://stag.palatodigital.com",
+        "prod": "https://palatodigital.com"
+    }
+    
+    # I check if the environment is valid. This ensures robustness.
+    if env not in urls:
+        raise ValueError(f"Environment '{env}' unknown. Valid: {list(urls.keys())}")
+    
+    # I return the correct URL to the test.
     return urls[env]
 
 
-# ---  MY "driver" FIXTURE ---
-@pytest.fixture
-def driver():
-    """This fixture will open and close the browser for my tests"""
+# --- 3. Automatic Screenshot Hook on Failure ---
+# This hook is called by PyTest after the execution of each test.
+@pytest.hookimpl(tryfirst=True, hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    
+    # 1. I get the result of the test execution (passed, failed, skipped)
+    outcome = yield
+    report = outcome.get_result()
 
-    # 1. --- THIS IS THE "SMART" CHECK ---
-    # I'll check if I'm running inside a GitHub Action (CI)
-    if os.getenv("CI") == "true":
-        
-        # --- RUNNING ON GITHUB (CI) ---
-        # I MUST use headless options.
-        options = Options()
-        options.add_argument("--headless")
-        options.add_argument("--no-sandbox")
-        options.add_argument("--disable-dev-shm-usage")
-        
-        # The 'setup-chrome' action in main.yml installed the driver for me,
-        # so I just pass the options.
-        driver = webdriver.Chrome(options=options)
-        
-    else:
-        
-        # --- RUNNING ON MY LOCAL PC ---
-        # I DON'T want headless, because I want to see the browser.
-        
-        # 1. I'll just configure the WebDriverManager to download the driver.
-        s = Service(ChromeDriverManager().install())
-        
-        # 2. I'll start the browser normally (WITHOUT headless options).
-        driver = webdriver.Chrome(service=s)
+    # 2. I check if the test failed and if it was during the main execution step
+    if report.when == "call" and report.failed:
+        try:
+            # 3. I access the 'page' fixture from the failing test item
+            page = item.funcargs["page"]
 
-    # 3. I'll add an implicit wait (this applies to both environments).
-    driver.implicitly_wait(5)
+            # 4. I define the path and filename
+            # I ensure the 'screenshots' directory exists (using pathlib for robustness)
+            screenshots_dir = Path("screenshots")
+            screenshots_dir.mkdir(exist_ok=True)
+            
+            # I create a unique filename using the test name
+            screenshot_path = screenshots_dir / f"{item.name}.png"
+            
+            # 5. I take the screenshot
+            # I use the Playwright 'page.screenshot' method directly
+            page.screenshot(path=str(screenshot_path))
+            
+            # I print a message to the terminal for confirmation
+            print(f"\n[ 📸 Screenshot ] Saved screenshot to: {screenshot_path}")
 
-    # 4. I "hand over" the 'driver' to the test.
-    yield driver
-
-    # 5. After the test, I close the browser.
-    driver.quit()
+        except Exception as e:
+            # I handle the error gracefully if the page or browser wasn't available
+            print(f"\n[ ❌ Screenshot Error ] Could not take screenshot: {e}")

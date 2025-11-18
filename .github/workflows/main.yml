@@ -2,28 +2,22 @@
 
 # 1. THE NAME: I'll give a name to my "workflow" (my process).
 # This is what will show up in the "Actions" tab on GitHub.
-name: Palato Digital Regression Tests
+name: Playwright Regression Tests
 
 # 2. THE TRIGGERS: When do I want this to run?
 on:
   
-  # Trigger A: Scheduled
-  # I want this to run "1x per week" (as I requested).
-  # This 'cron syntax' means "at 5:00 AM, every Monday".
+  # Trigger A: Scheduled (Runs Monday at 5:00 AM)
   schedule:
     - cron: '0 5 * * 1'
     
-  # Trigger B: Manual (workflow_dispatch)
-  # This adds a "Run workflow" button on GitHub.
-  # This is what I'll use "when I update plugins".
+  # Trigger B: Manual (Adds a "Run workflow" button)
   workflow_dispatch:
 
 # 3. THE JOBS: What is the robot going to do?
 jobs:
-  # I only have one job, which I'll call 'run-pytest'
-  run-pytest:
+  run-playwright-tests:
   
-    # Where will this job run?
     # I'll use the latest Ubuntu (Linux) virtual machine
     # that GitHub offers for free.
     runs-on: ubuntu-latest
@@ -31,39 +25,34 @@ jobs:
     # What are the steps for this job?
     steps:
     
-      # Step 1: "Check-out" my code
-      # I have to tell the robot to "download" my repository
-      # (the conftest.py, the /tests folder, etc.) to the virtual machine.
+      # Step 1: Check-out my code (Standard)
       - name: Check-out repository
         uses: actions/checkout@v4
 
-      # Step 2: Set up Python
-      # I have to install Python on the machine,
-      # just like I did on my PC (Step 1).
+      # Step 2: Set up Python (Standard)
       - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
-      # Step 3: Set up Google Chrome
-      # Selenium needs a browser! I'll use a pre-made "Action"
-      # that installs Google Chrome on the machine.
-      - name: Set up Google Chrome
-        uses: browser-actions/setup-chrome@v1
-
-      # Step 4: Install my dependencies
-      # (Equivalent to my local Step 2)
+      # Step 3: Install dependencies (Reading requirements.txt)
       - name: Install pip and libraries
         run: |
           # First, I'll upgrade 'pip' (the package manager)
           python -m pip install --upgrade pip
           # Then, I'll install all the tools from my 'requirements.txt'
+          # This installs pytest-playwright.
           pip install -r requirements.txt
           
+      # Step 4: Install Playwright Browsers
+      # This downloads the actual browser binaries (Chromium, Firefox, WebKit) 
+      # onto the Linux machine.
+      - name: Install Playwright Browsers (Chromium, Firefox, WebKit)
+        run: playwright install
+
       # Step 5: Run my tests!
-      # This is the main command.
       - name: Run PyTest (against Staging)
         run: |
-          # I'll run 'pytest' and tell it to use the 'stag' environment
-          # (the 'default'). If 'stag' breaks, I want to know!
-          pytest --env=stag
+          # I'll run 'pytest' and pass the '--headed' flag only if I want to see
+          # the browser opening on my PC. The GitHub runner runs HEADLESS by default.
+          pytest --browser=chromium --env=stag
