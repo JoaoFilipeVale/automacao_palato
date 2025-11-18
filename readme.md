@@ -4,7 +4,6 @@
 *Ensure Flawless User Experience, Effortlessly and Continuously*
 
 ![last commit](https://img.shields.io/github/last-commit/JoaoFilipeVale/automacao_palato?style=flat-square)
-![python](https://img.shields.io/badge/python-100%25-blue?style=flat-square)
 ![languages](https://img.shields.io/github/languages/top/JoaoFilipeVale/automacao_palato?style=flat-square)
 
 Built with the tools and technologies:
