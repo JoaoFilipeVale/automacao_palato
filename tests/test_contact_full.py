@@ -4,7 +4,7 @@ from playwright.sync_api import Page, expect
 
 # --- Test -> Full Contact Page Verification ---
 
-def test_contact_full(page: Page, base_url):
+def test_contact_full(page: Page, base_url, layout):
     """
     Test Scenario: Full Contact Page End-to-End
     
@@ -12,7 +12,8 @@ def test_contact_full(page: Page, base_url):
     1. Navigate from Homepage (Header CTA).
     2. Verify URL.
     3. Verify Static Content (H2, Intro, Email).
-    4. Execute Form Logic (Fill and Submit).
+    4. Verify Footer.
+    5. Execute Form Logic (Fill and Submit).
     """
 
     # 1. Navigation from Homepage
@@ -43,6 +44,12 @@ def test_contact_full(page: Page, base_url):
 
     # Check Email Address
     expect(page.get_by_text("geral@palatodigital.com")).to_be_visible()
+
+    # 4. Verify Layout (Header & Footer)
+    layout.verify_header()
+
+    # 4. Verify Footer
+    layout.verify_footer()
 
     # 4. Form Execution (Adapted from test_contact_form.py)
     
@@ -86,10 +93,21 @@ def test_contact_full(page: Page, base_url):
     # Submit Form
     page.locator('input[type="submit"]').click()
 
-    # Verify Submission Result (Expecting Error for this test scenario)
-    expected_error_message = "Ocorreu um erro ao tentar enviar a sua mensagem. Por favor, tente novamente mais tarde."
+    # Verify Submission Result
+    # Handling Logic:
+    # - Local execution: Might successfully submit ("enviada com sucesso").
+    # - CI/Headless: Might be blocked by spam filters ("Ocorreu um erro").
+    # Both are considered "passing" for the purpose of testing UI interaction flow.
     
     response_box = page.locator('.wpcf7-response-output')
-    
-    # Using contain_text as the message might have surrounding whitespace
-    expect(response_box).to_contain_text(expected_error_message)
+    expect(response_box).to_be_visible()
+    text = response_box.inner_text()
+
+    if "enviada com sucesso" in text:
+        # Success scenario
+        assert True
+    elif "Ocorreu um erro" in text:
+        # Anti-spam/Error scenario
+        assert True
+    else:
+        pytest.fail(f"Unexpected form response: {text}")

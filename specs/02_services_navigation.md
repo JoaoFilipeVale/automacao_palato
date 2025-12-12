@@ -42,9 +42,14 @@ Verify that the `Serviços` page is accessible from the homepage and displays th
         - H1 has text "Serviços".
         - Element above H1 has text "O que fazemos".
 
-4.  **Verify First Service Card**
-    - **Action**: Locate the first card in the services grid.
-    - **Validation**: Contains title text "Estratégia e inovação digital".
+4.  **Verify Service Cards**
+    - **Action**: Locate the service cards in the grid.
+    - **Validation**: Ensure ALL of the following core services are visible:
+        - "Estratégia e inovação digital"
+        - "Identidade e design da marca"
+        - "Desenvolvimento Web"
+        - "Alojamento e domínios"
+        - "Suporte e manutenção contínuos"
 
 5.  **Verify Layout Consistency**
     - **Action**: Check for Header and Footer presence.

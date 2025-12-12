@@ -4,7 +4,7 @@ from playwright.sync_api import Page, expect
 
 # --- Test -> About Page Navigation ---
 
-def test_about_page_navigation(page: Page, base_url):
+def test_about_page_navigation(page: Page, base_url, layout):
     """
     Test Scenario: Verify navigation to the About page and check its key content.
     
@@ -60,8 +60,8 @@ def test_about_page_navigation(page: Page, base_url):
 
     # 6. Verify Layout (Header & Footer)
     
-    # Header: Check for Logo
-    expect(page.locator("#logo").or_(page.locator(".custom-logo-link"))).to_be_visible()
+    # Header: Check for Logo and Menu
+    layout.verify_header()
 
     # Footer: Check for footer element or contentinfo
-    expect(page.get_by_role("contentinfo").or_(page.locator("footer"))).to_be_visible()
+    layout.verify_footer()

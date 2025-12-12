@@ -4,7 +4,7 @@ from playwright.sync_api import Page, expect
 
 # --- Test -> Homepage Sanity Check ---
 
-def test_homepage_sanity(page: Page, base_url):
+def test_homepage_sanity(page: Page, base_url, layout):
     """
     Verifies that the homepage loads correctly and key elements are visible and functional.
     Scope: Title, Header, Hero CTA, Footer (Social & Legal).
@@ -18,18 +18,12 @@ def test_homepage_sanity(page: Page, base_url):
     # This makes the test robust against small changes like "Página Principal - Palato Digital".
     expect(page).to_have_title(re.compile("Palato Digital"))
     
-    # 2. Cookie Banner Handling
-    # Safe check: only click if visible to avoid errors if already accepted.
-    cookie_button = page.get_by_role("button", name="Aceite tudo")
-    
-    if cookie_button.is_visible():
-        cookie_button.click()
-        expect(cookie_button).to_be_hidden()
+    # 2. Cookie Banner Handling -> Handled by 'layout' fixture automatically
 
     # 3. Header Verification
     
-    # Logo: Check for the logo using its alt text for better robustness and accessibility check
-    expect(page.get_by_alt_text("Palato Digital").first).to_be_visible()
+    # Standard Header Verification (Logo + Menu)
+    layout.verify_header()
 
     # --- NAVIGATION CHECKS ---
     
@@ -93,7 +87,7 @@ def test_homepage_sanity(page: Page, base_url):
             pytest.fail("No visible 'Vamos falar' button found in the CTA section.")
 
     # 5. Footer Verification
-    page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
+    layout.verify_footer()
 
     # Social Media Links
     social_networks = ["Instagram", "Facebook", "LinkedIn", "Behance"]

@@ -4,7 +4,7 @@ from playwright.sync_api import Page, expect
 
 # --- Test -> Services Page Navigation ---
 
-def test_services_page_navigation(page: Page, base_url):
+def test_services_page_navigation(page: Page, base_url, layout):
     """
     Test Scenario: Verify navigation to the Services page and check its key content.
     
@@ -36,17 +36,24 @@ def test_services_page_navigation(page: Page, base_url):
     # We use get_by_text for specific content verification.
     expect(page.get_by_text("O que fazemos")).to_be_visible()
 
-    # 5. Verify First Service Card
-    # Title: 'Estratégia e inovação digital'
-    # We look for a heading or strong text inside the card structure.
-    # Using get_by_role heading with name pattern matches the accessible structure best.
-    # The spec mentions it might have an icon, so we use regex or partial match.
-    expect(page.get_by_role("heading", name="Estratégia e inovação digital", exact=False).first).to_be_visible()
+    # 5. Verify All Service Cards
+    # We verify the presence of all 5 core services listed on the page.
+    services = [
+        "Estratégia e inovação digital",
+        "Identidade e design da marca",
+        "Desenvolvimento Web",
+        "Alojamento e domínios",
+        "Suporte e manutenção contínuos"
+    ]
+
+    for service in services:
+        # Using exact=False to handle potential icons or extra whitespace
+        expect(page.get_by_role("heading", name=service, exact=False).first).to_be_visible()
 
     # 6. Verify Layout (Header & Footer)
-    # Header: Check for Logo
-    expect(page.locator("#logo").or_(page.locator(".custom-logo-link"))).to_be_visible()
+    # Header: Check for Logo and Menu
+    layout.verify_header()
 
     # Footer: Check for a unique footer element or link
     # Using 'contentinfo' role which usually maps to the <footer> tag
-    expect(page.get_by_role("contentinfo").or_(page.locator("footer"))).to_be_visible()
+    layout.verify_footer()

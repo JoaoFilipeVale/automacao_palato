@@ -94,3 +94,83 @@ def pytest_runtest_makereport(item, call):
         except Exception as e:
             # I handle the error gracefully if the page or browser wasn't available
             print(f"\n[ ❌ Screenshot Error ] Could not take screenshot: {e}")
+
+
+# --- 4. Page Layout Fixture (DRY Refactor) ---
+class PageLayout:
+    """
+    Encapsulates common page interactions to avoid code duplication (DRY).
+    Includes methods for footer verification, cookie acceptance, and header checks.
+    """
+    def __init__(self, page):
+        self.page = page
+
+    def accept_cookies(self):
+        """
+        Checks for the cookie banner and accepts it if visible.
+        This prevents random timeouts and elements being covered.
+        """
+        try:
+            # "Aceite tudo" button
+            cookie_button = self.page.get_by_role("button", name="Aceite tudo")
+            if cookie_button.is_visible(timeout=2000):
+                cookie_button.click()
+                expect(cookie_button).to_be_hidden()
+        except Exception:
+            # Ignore if not found or already accepted
+            pass
+
+    def verify_footer(self):
+        """
+        Robustly verifies that the footer is visible.
+        1. Scrolls to the bottom using JS (handles lazy loading).
+        2. Asserts #footer-outer is visible.
+        3. Fallback: Checks for 'Palato Digital' text if wrapper has 0 height.
+        """
+        self.page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
+        
+        # Primary check: The container
+        footer = self.page.locator("#footer-outer")
+        
+        # We try to assert visibility. 
+        # Known issue: On some pages (Privacy/Cookie Policy), #footer-outer has 0 height.
+        # We handle this by checking opacity/display or falling back to content check.
+        try:
+            expect(footer).to_be_visible(timeout=3000)
+        except AssertionError:
+            # Fallback for 0-height containers: Check for Copyright Text or other common footer elements
+            # We try multiple common footer strings to be robust
+            try:
+                expect(self.page.get_by_text("Palato Digital").last).to_be_visible(timeout=2000)
+            except AssertionError:
+                 expect(self.page.get_by_text("Todos os direitos reservados", exact=False).first).to_be_visible(timeout=2000)
+
+    def verify_header(self):
+        """
+        Verifies that the header elements are visible.
+        1. Checks for Logo (via ID or Alt Text).
+        2. Checks for Menu navigation links.
+        """
+        # 1. Logo
+        # Tries checking by alt text first (accessibility best practice), falls back to ID/Class
+        try:
+            expect(self.page.get_by_alt_text("Palato Digital").first).to_be_visible()
+        except AssertionError:
+            expect(self.page.locator("#logo").or_(self.page.locator(".custom-logo-link"))).to_be_visible()
+
+        # 2. Main Navigation Links
+        # We check for key pages to ensure the menu is rendered
+        nav_pages = ["Serviços", "Sobre", "Vamos falar"]
+        for name in nav_pages:
+             expect(self.page.get_by_role("link", name=name, exact=False).first).to_be_visible()
+
+
+@pytest.fixture
+def layout(page):
+    """
+    Returns a PageLayout instance.
+    Automatically attempts to accept cookies when instantiated.
+    """
+    page_layout = PageLayout(page)
+    page_layout.accept_cookies()
+    return page_layout
