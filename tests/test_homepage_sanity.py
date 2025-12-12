@@ -28,8 +28,8 @@ def test_homepage_sanity(page: Page, base_url):
 
     # 3. Header Verification
     
-    # Logo: Check for either the ID #logo OR the class .custom-logo-link for robustness
-    expect(page.locator("#logo").or_(page.locator(".custom-logo-link"))).to_be_visible()
+    # Logo: Check for the logo using its alt text for better robustness and accessibility check
+    expect(page.get_by_alt_text("Palato Digital").first).to_be_visible()
 
     # --- NAVIGATION CHECKS ---
     

@@ -46,6 +46,21 @@ def base_url(request):
     return urls[env]
 
 
+# --- 3. Browser Context Arguments (Viewport) ---
+@pytest.fixture(scope="session")
+def browser_context_args():
+    """
+    I override the default browser context arguments to set the viewport size.
+    This ensures that the desktop menu is visible and avoids 'hamburger menu' issues.
+    """
+    return {
+        "viewport": {
+            "width": 1920,
+            "height": 1080,
+        },
+    }
+
+
 # --- 3. Automatic Screenshot Hook on Failure ---
 # This hook is called by PyTest after the execution of each test.
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)
