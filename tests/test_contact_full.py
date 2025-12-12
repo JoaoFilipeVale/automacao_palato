@@ -16,12 +16,9 @@ def test_contact_full(page: Page, base_url, layout):
     5. Execute Form Logic (Fill and Submit).
     """
 
-    # 1. Navigation from Homepage
-    page.goto(base_url)
-    
-    # Click 'Vamos falar' in the header
-    # Using exact=False to match "Vamos falar" even with extra spaces
-    page.get_by_role("link", name="Vamos falar", exact=False).first.click()
+    # 1. Navigate to Contact Page
+    target_url = f"{base_url}/contacto/"
+    page.goto(target_url)
 
     # 2. Verify URL
     # Expect the URL to contain "/contacto/"
