@@ -66,7 +66,7 @@ def test_contact_full(page: Page, base_url, layout):
     email_field = page.locator('[name="your-email"]')
     expect(email_field).to_be_editable()
     email_field.click()
-    email_field.press_sequentially("test@palatodigital.com", delay=50)
+    email_field.press_sequentially("automacao_palato@mailinator.com", delay=50)
     
     # Fill Phone (even if optional, we test the field)
     phone_field = page.locator('[name="your-phone"]')
