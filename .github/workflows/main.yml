@@ -51,8 +51,8 @@ jobs:
         run: playwright install
 
       # Step 5: Run my tests!
-      - name: Run PyTest (against Staging)
+      - name: Run PyTest (against Production)
         run: |
-          # I'll run 'pytest' and pass the '--headed' flag only if I want to see
-          # the browser opening on my PC. The GitHub runner runs HEADLESS by default.
-          pytest --browser=chromium --env=stag
+          # I'll run 'pytest' against the PRODUCTION environment.
+          # The GitHub runner runs HEADLESS by default.
+          pytest --browser=chromium --env=prod
