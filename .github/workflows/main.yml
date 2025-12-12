@@ -1,58 +1,55 @@
-# --- My Test Robot's Brain (GitHub Actions) ---
-
-# 1. THE NAME: I'll give a name to my "workflow" (my process).
-# This is what will show up in the "Actions" tab on GitHub.
 name: Playwright Regression Tests
 
-# 2. THE TRIGGERS: When do I want this to run?
 on:
-  
-  # Trigger A: Scheduled (Runs Monday at 5:00 AM)
+  # Trigger A: Scheduled (Runs Daily at 07:00 AM UTC)
   schedule:
-    - cron: '0 5 * * 1'
-    
-  # Trigger B: Manual (Adds a "Run workflow" button)
+    - cron: '0 7 * * *'
+
+  # Trigger B: External Webhook (e.g., from WordPress Plugin Update)
+  repository_dispatch:
+    types: [plugin-update-event]
+
+  # Trigger C: Manual
   workflow_dispatch:
 
-# 3. THE JOBS: What is the robot going to do?
 jobs:
   run-playwright-tests:
-  
-    # I'll use the latest Ubuntu (Linux) virtual machine
-    # that GitHub offers for free.
     runs-on: ubuntu-latest
     
-    # What are the steps for this job?
     steps:
-    
-      # Step 1: Check-out my code (Standard)
       - name: Check-out repository
         uses: actions/checkout@v4
 
-      # Step 2: Set up Python (Standard)
       - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
-      # Step 3: Install dependencies (Reading requirements.txt)
       - name: Install pip and libraries
         run: |
-          # First, I'll upgrade 'pip' (the package manager)
           python -m pip install --upgrade pip
-          # Then, I'll install all the tools from my 'requirements.txt'
-          # This installs pytest-playwright.
           pip install -r requirements.txt
-          
-      # Step 4: Install Playwright Browsers
-      # This downloads the actual browser binaries (Chromium, Firefox, WebKit) 
-      # onto the Linux machine.
-      - name: Install Playwright Browsers (Chromium, Firefox, WebKit)
+
+      - name: Install Playwright Browsers
         run: playwright install
 
-      # Step 5: Run my tests!
-      - name: Run PyTest (against Production)
-        run: |
-          # I'll run 'pytest' against the PRODUCTION environment.
-          # The GitHub runner runs HEADLESS by default.
-          pytest --browser=chromium --env=prod
+      - name: Run PyTest (Production)
+        run: pytest --browser=chromium --env=prod
+
+      # --- Discord Notifications ---
+      
+      - name: Notify Discord (Success)
+        if: success()
+        uses: ilshidur/action-discord@master
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        with:
+          args: '✅ **Palato Digital: Daily Health Check Passed!** All systems operational.'
+
+      - name: Notify Discord (Failure)
+        if: failure()
+        uses: ilshidur/action-discord@master
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        with:
+          args: '🚨 **ALERT: Palato Digital Tests FAILED!** Please check GitHub Actions logs immediately.'
