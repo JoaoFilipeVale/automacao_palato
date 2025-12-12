@@ -15,6 +15,10 @@ __pycache__/
 # My local editor settings.
 .vscode/
 
+# --- Playwright ---
+# Playwright's screenshots and videos.
+screenshots/
+
 # --- Operating System Files ---
 # Windows trash
 Thumbs.db

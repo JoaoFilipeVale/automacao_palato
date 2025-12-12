@@ -209,6 +209,35 @@ automacao_palato/
 
 ---
 
+## Commit Standards
+The project follows the [Conventional Commits](https://www.conventionalcommits.org/) specification to keep the history clear and readable.
+
+Every commit message should be structured as follows:
+
+```
+<type>: <description>
+```
+
+### Allowed Types
+
+| Type       | Description |
+| :---       | :--- |
+| **feat**   | A new feature for the user. |
+| **fix**    | A bug fix. |
+| **docs**   | Documentation only changes. |
+| **style**  | Changes that do not affect the meaning of the code (white-space, formatting, etc). |
+| **refactor** | A code change that neither fixes a bug nor adds a feature. |
+| **test**   | Adding missing tests or correcting existing tests. |
+| **chore**  | Changes to the build process or auxiliary tools (e.g., config changes). |
+
+### Example
+
+```text
+feat: add contact form validation
+```
+
+---
+
 ## Final Notes
 
 This framework ensures Palato Digital’s platform remains stable, reliable, and user‑friendly across updates.
