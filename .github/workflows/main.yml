@@ -1,15 +1,19 @@
 name: Playwright Regression Tests
 
 on:
-  # Trigger A: Scheduled (Runs Daily at 07:00 AM UTC)
+  # Trigger A: Push to Main (Continuous Integration)
+  push:
+    branches: [ main ]
+
+  # Trigger B: Scheduled (Runs Daily at 07:00 AM UTC)
   schedule:
     - cron: '0 7 * * *'
 
-  # Trigger B: External Webhook (e.g., from WordPress Plugin Update)
+  # Trigger C: External Webhook (e.g., from WordPress Plugin Update)
   repository_dispatch:
     types: [plugin-update-event]
 
-  # Trigger C: Manual
+  # Trigger D: Manual
   workflow_dispatch:
 
 jobs:
